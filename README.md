@@ -1,4 +1,4 @@
-# 🎵 Music Recommender Simulation
+  # 🎵 Music Recommender Simulation
 
 ## Project Summary
 
@@ -18,16 +18,23 @@ Replace this paragraph with your own summary of what your version does.
 ## How The System Works
 
 Explain your design in plain language.
+The recommandation machine is content-based, so user's will get recommended songs based on how close the features of a new song line up with their existing preferences. Stronger features (mood, genre) will have more weight in scoring similarity to user preference, while less significant features (acoustic preference) zwill have less of an impact on whether a song should be recommended or not.
 
 Some prompts to answer:
 
 - What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
+  - Primarily genre, mood and energy
 - What information does your `UserProfile` store
+These 3 plus acoustic preference
 - How does your `Recommender` compute a score for each song
+It assigns a value to the features used, and applies a scalar weight to compute a composite recommendation score
 - How do you choose which songs to recommend
+The algorithm will sort the songs by scores in descending order, and return recommendations to the top x songs
 
 You can include a simple diagram or bullet list if helpful.
+See file which-features....
+
+Note that this algorithm prioritizes songs that match the user's choice of mood and genre precisely. A song that exactly matches their acoustic preference or energy levels may not be high enough in the rankings even with an exact match.
 
 ---
 
@@ -69,6 +76,23 @@ You can add more tests in `tests/test_recommender.py`.
 ## Sample Recommendation Output
 
 Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+
+Top recommendations:
+
+Sunrise City - Score: 0.99
+Because: matches favorite genre (pop); matches favorite mood (happy); close to target energy (0.8 vs 0.82)
+
+Gym Hero - Score: 0.67
+Because: matches favorite genre (pop); close to target energy (0.8 vs 0.93)
+
+Rooftop Lights - Score: 0.58
+Because: matches favorite mood (happy); close to target energy (0.8 vs 0.76)
+
+Circuit Breaker - Score: 0.29
+Because: close to target energy (0.8 vs 0.81)
+
+Night Drive Loop - Score: 0.28
+Because: close to target energy (0.8 vs 0.75)
 
 ```
 # e.g.:
