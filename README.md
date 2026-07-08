@@ -94,14 +94,64 @@ Because: close to target energy (0.8 vs 0.81)
 Night Drive Loop - Score: 0.28
 Because: close to target energy (0.8 vs 0.75)
 
-```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
-```
+
+Edge case: explicit None values instead of absent keys
+prefs={'genre': None, 'mood': None, 'energy': None} k=5
+----------------------------------------------------------------------
+Sunrise City - Score: 0.00
+Because: generally aligned with your taste
+
+Rooftop Lights - Score: 0.00
+Because: generally aligned with your taste
+
+Carnival Static - Score: 0.00
+Because: generally aligned with your taste
+
+Gym Hero - Score: 0.00
+Because: generally aligned with your taste
+
+Neon Static - Score: 0.00
+Because: generally aligned with your taste
+
+
+======================================================================
+Edge case: energy passed as a numeric string
+prefs={'genre': 'pop', 'mood': 'happy', 'energy': '0.8'} k=5
+----------------------------------------------------------------------
+Sunrise City - Score: 0.99
+Because: matches favorite genre (pop); matches favorite mood (happy); close to target energy (0.8 vs 0.82)
+
+Gym Hero - Score: 0.67
+Because: matches favorite genre (pop); close to target energy (0.8 vs 0.93)
+
+Rooftop Lights - Score: 0.58
+Because: matches favorite mood (happy); close to target energy (0.8 vs 0.76)
+
+Circuit Breaker - Score: 0.29
+Because: close to target energy (0.8 vs 0.81)
+
+Night Drive Loop - Score: 0.28
+Because: close to target energy (0.8 vs 0.75)
+
+
+======================================================================
+Edge case: unrelated extra keys should be ignored
+prefs={'genre': 'pop', 'favorite_color': 'blue', 'energy': 0.8} k=5
+----------------------------------------------------------------------
+Sunrise City - Score: 0.99
+Because: matches favorite genre (pop); close to target energy (0.8 vs 0.82)
+
+Gym Hero - Score: 0.95
+Because: matches favorite genre (pop); close to target energy (0.8 vs 0.93)
+
+Circuit Breaker - Score: 0.41
+Because: close to target energy (0.8 vs 0.81)
+
+Rooftop Lights - Score: 0.40
+Because: close to target energy (0.8 vs 0.76)
+
+Night Drive Loop - Score: 0.40
+Because: close to target energy (0.8 vs 0.75)
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
 
@@ -115,6 +165,10 @@ Use this section to document the experiments you ran. For example:
 - What happened when you added tempo or valence to the score
 - How did your system behave for different types of users
 
+Preferences outside of the standardized 0-1 range were resulting in negative scores, which could be useful for the user to specify they would not like to see songs like that
+Setting k < 0 was silently working instead of erroring due to pythonic indexing
+I ended up switching acousticness from a binary (< or > 0.5) to a float because that attribute isn't really a yes/no question
+
 ---
 
 ## Limitations and Risks
@@ -123,9 +177,10 @@ Summarize some limitations of your recommender.
 
 Examples:
 
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
+Miniscule dataset, likely will overfit and struggle as niche preferences are addede
+Has no regard for language
+Attempts to compute subjective values (danceability), risk of bias
+Explicit content is never marked/filtered- could be an issue if kids use this tool
 
 You will go deeper on this in your model card.
 
@@ -142,5 +197,5 @@ Write 1 to 2 paragraphs here about what you learned:
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
 
-
+See model card
 

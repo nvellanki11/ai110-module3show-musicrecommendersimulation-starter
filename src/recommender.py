@@ -9,7 +9,7 @@ MOOD_WEIGHT = 0.25
 ENERGY_WEIGHT = 0.25
 ACOUSTIC_WEIGHT = 0.15
 ENERGY_CLOSE_TOLERANCE = 0.15
-ACOUSTIC_CLOSE_TOLERANCE = 0.15
+ACOUSTIC_MATCH_THRESHOLD = 0.5
 
 @dataclass
 class Song:
@@ -75,13 +75,13 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     pref_genre = user_prefs.get("genre")
     if pref_genre is not None:
-        match = str(song["genre"]).lower() == str(pref_genre).lower()
+        match = str(song["genre"]).strip().lower() == str(pref_genre).strip().lower()
         reason = f"matches favorite genre ({song['genre']})" if match else None
         components.append((GENRE_WEIGHT, 1.0 if match else 0.0, reason))
 
     pref_mood = user_prefs.get("mood")
     if pref_mood is not None:
-        match = str(song["mood"]).lower() == str(pref_mood).lower()
+        match = str(song["mood"]).strip().lower() == str(pref_mood).strip().lower()
         reason = f"matches favorite mood ({song['mood']})" if match else None
         components.append((MOOD_WEIGHT, 1.0 if match else 0.0, reason))
 
@@ -93,17 +93,19 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
             if diff <= ENERGY_CLOSE_TOLERANCE
             else None
         )
-        components.append((ENERGY_WEIGHT, 1.0 - diff, reason))
+        components.append((ENERGY_WEIGHT, max(0.0, 1.0 - diff), reason))
 
     pref_acoustic = user_prefs.get("acousticness", user_prefs.get("likes_acoustic"))
     if pref_acoustic is not None:
-        diff = abs(float(song["acousticness"]) - float(pref_acoustic))
+        likes_acoustic = bool(pref_acoustic)
+        is_acoustic = float(song["acousticness"]) >= ACOUSTIC_MATCH_THRESHOLD
+        match = is_acoustic == likes_acoustic
         reason = (
             f"acousticness matches your preference ({song['acousticness']})"
-            if diff <= ACOUSTIC_CLOSE_TOLERANCE
+            if match
             else None
         )
-        components.append((ACOUSTIC_WEIGHT, 1.0 - diff, reason))
+        components.append((ACOUSTIC_WEIGHT, 1.0 if match else 0.0, reason))
 
     if not components:
         return 0.0, []
@@ -126,4 +128,4 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
         scored,
         key=lambda entry: (-entry[1], -entry[0]["valence"], entry[0]["id"]),
     )
-    return [(song, score, _format_explanation(reasons)) for song, score, reasons in ranked[:k]]
+    return [(song, score, _format_explanation(reasons)) for song, score, reasons in ranked[:max(k, 0)]]
